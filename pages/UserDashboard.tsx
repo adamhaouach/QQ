@@ -1,30 +1,23 @@
-
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { User, Booking, CoachingSession, PlatformRules, TournamentRegistration, SkillTier, ReportReason } from '../types';
+import { GoogleGenAI } from "@google/genai";
 import { 
   Calendar, 
-  Users, 
-  History, 
   LogOut, 
-  CreditCard, 
-  ChevronRight, 
   Plus, 
   Trash2, 
-  ShieldCheck,
-  ShieldAlert,
-  Zap,
-  Clock,
-  Download,
-  X,
-  Star,
-  Trophy,
-  Medal,
-  Activity,
-  Flag,
-  BrainCircuit,
-  Swords,
-  Timer
+  Zap, 
+  Clock, 
+  Download, 
+  X, 
+  Trophy, 
+  Medal, 
+  Activity, 
+  Flag, 
+  BrainCircuit, 
+  Loader2,
+  Sparkles
 } from 'lucide-react';
 
 interface UserDashboardProps {
@@ -38,12 +31,15 @@ interface UserDashboardProps {
 }
 
 const UserDashboard: React.FC<UserDashboardProps> = ({ user, bookings, sessions, registrations, onCancelBooking, onLogout, platformRules }) => {
-  const navigate = useNavigate();
   const userBookings = bookings.filter(b => b.userId === user.id);
   const upcomingBookings = userBookings.filter(b => b.status === 'Confirmed');
 
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportData, setReportData] = useState({ reason: ReportReason.OTHER, comment: '' });
+  
+  // AI Insights State
+  const [aiInsight, setAiInsight] = useState<string | null>(null);
+  const [loadingInsight, setLoadingInsight] = useState(false);
 
   const getTierColor = (tier: SkillTier) => {
     switch (tier) {
@@ -52,6 +48,22 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ user, bookings, sessions,
       case SkillTier.ELITE: return 'text-amber-500';
       case SkillTier.COMPETITIVE: return 'text-red-500';
       default: return 'text-white';
+    }
+  };
+
+  const generateAIInsight = async () => {
+    setLoadingInsight(true);
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: `Analyze this Padel player profile: Rank ${user.rank || 'Bronze'}, Tier ${user.skillTier || 'Rookie'}, Matches ${user.totalMatches || 0}. Provide one ultra-concise technical Padel tip for their next match in uppercase.`,
+      });
+      setAiInsight(response.text || "KEEP TRAINING TO UNLOCK MORE DATA.");
+    } catch (error) {
+      setAiInsight("AI CLUSTER SYNC FAILED. REFRESH NODE.");
+    } finally {
+      setLoadingInsight(false);
     }
   };
 
@@ -105,15 +117,15 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ user, bookings, sessions,
         {/* SIDEBAR */}
         <aside className="lg:w-[320px] shrink-0 space-y-6">
           <div className="bg-[#0c1221] border border-white/5 p-8 rounded-sm shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-accent/20"></div>
+            <div className="absolute top-0 left-0 w-full h-1 bg-[#95f122]/20"></div>
             <div className="flex flex-col items-center text-center">
               <div className="relative mb-6">
-                <img src={user.avatar || `https://ui-avatars.com/api/?name=${user.name}&background=95f122&color=040812&size=128`} className="w-24 h-24 rounded-full border-4 border-accent/10 p-1 grayscale" alt=""/>
-                <div className="absolute bottom-1 right-1 bg-accent p-1.5 rounded-full border-2 border-[#0c1221]"><Trophy size={10} className="text-[#040812]"/></div>
+                <img src={user.avatar || `https://ui-avatars.com/api/?name=${user.name}&background=95f122&color=040812&size=128`} className="w-24 h-24 rounded-full border-4 border-[#95f122]/10 p-1 grayscale" alt=""/>
+                <div className="absolute bottom-1 right-1 bg-[#95f122] p-1.5 rounded-full border-2 border-[#0c1221]"><Trophy size={10} className="text-[#040812]"/></div>
               </div>
               <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-1">{user.name}</h2>
               <div className="flex items-center gap-2 mb-8">
-                 <span className="text-[10px] font-black text-accent uppercase tracking-widest italic">{user.rank || 'BRONZE'}</span>
+                 <span className="text-[10px] font-black text-[#95f122] uppercase tracking-widest italic">{user.rank || 'BRONZE'}</span>
                  <div className="w-[1px] h-3 bg-white/10"></div>
                  <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest italic">SR {user.skillScore || 35}</span>
               </div>
@@ -128,7 +140,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ user, bookings, sessions,
                     <p className="text-[7px] font-bold text-slate-700 uppercase">Rating</p>
                  </div>
                  <div className="text-center">
-                    <p className="text-xl font-black text-accent italic tracking-tighter">{user.reliabilityScore || 0}%</p>
+                    <p className="text-xl font-black text-[#95f122] italic tracking-tighter">{user.reliabilityScore || 0}%</p>
                     <p className="text-[7px] font-bold text-slate-700 uppercase">Reliability</p>
                  </div>
               </div>
@@ -155,7 +167,25 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ user, bookings, sessions,
                    <span className="text-[8px] font-black text-white">SYNC</span>
                 </div>
              </div>
-             <p className="text-[7px] font-bold text-slate-700 uppercase leading-relaxed tracking-wider">Derived from performance delta, win-rate volatility, and athlete reviews.</p>
+             
+             {/* Dynamic AI Tip */}
+             <div className="mt-6 pt-4 border-t border-indigo-500/10">
+                {aiInsight ? (
+                  <div className="animate-in fade-in slide-in-from-top-2 duration-500">
+                    <p className="text-[8px] font-black text-indigo-300 uppercase tracking-widest mb-1 italic">Pro Strategy Insight:</p>
+                    <p className="text-[9px] font-bold text-white uppercase italic leading-relaxed tracking-tighter">"{aiInsight}"</p>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={generateAIInsight}
+                    disabled={loadingInsight}
+                    className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[8px] font-black uppercase tracking-widest hover:bg-indigo-500/20 transition-all"
+                  >
+                    {loadingInsight ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />}
+                    {loadingInsight ? 'GENERATING...' : 'REQUEST STRATEGY TIP'}
+                  </button>
+                )}
+             </div>
           </div>
 
           <div className="bg-[#0c1221] border border-white/5 p-2 rounded-sm space-y-1">
@@ -173,16 +203,16 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ user, bookings, sessions,
         {/* CONTENT */}
         <div className="flex-grow space-y-12">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-             <Link to="/book-court" className="flex items-center justify-between p-10 bg-[#0c1221] border border-white/5 hover:border-accent/30 transition-all shadow-2xl group relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+             <Link to="/book-court" className="flex items-center justify-between p-10 bg-[#0c1221] border border-white/5 hover:border-[#95f122]/30 transition-all shadow-2xl group relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#95f122]/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
                 <div className="flex items-center gap-6 z-10">
-                   <div className="w-14 h-14 bg-accent/10 flex items-center justify-center border border-accent/10"><Calendar className="text-accent" size={20}/></div>
+                   <div className="w-14 h-14 bg-[#95f122]/10 flex items-center justify-center border border-[#95f122]/10"><Calendar className="text-[#95f122]" size={20}/></div>
                    <div>
                       <h3 className="text-lg font-black text-white uppercase italic tracking-tighter">Arena Booking</h3>
                       <p className="text-[9px] text-slate-600 font-bold uppercase tracking-widest mt-1">Reserve dedicated arena nodes</p>
                    </div>
                 </div>
-                <Plus size={18} className="text-slate-800 group-hover:text-accent transition-all group-hover:rotate-90"/>
+                <Plus size={18} className="text-slate-800 group-hover:text-[#95f122] transition-all group-hover:rotate-90"/>
              </Link>
              <div className="bg-gradient-to-br from-teal-900/20 to-transparent border border-teal-500/20 p-10 flex items-center gap-6 relative overflow-hidden">
                 <div className="absolute bottom-0 right-0 p-4 opacity-5"><Medal size={80}/></div>
@@ -213,7 +243,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ user, bookings, sessions,
 
           <section>
              <header className="flex items-center justify-between border-b border-white/5 pb-4 mb-8">
-                <h3 className="text-xs md:text-sm font-black text-white uppercase tracking-[0.4em] flex items-center gap-3 italic"><Zap size={18} className="text-accent" /> Signal Stream</h3>
+                <h3 className="text-xs md:text-sm font-black text-white uppercase tracking-[0.4em] flex items-center gap-3 italic"><Zap size={18} className="text-[#95f122]" /> Signal Stream</h3>
                 <div className="flex items-center gap-6">
                    <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></div>
@@ -225,22 +255,22 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ user, bookings, sessions,
                 {upcomingBookings.length > 0 ? (
                   upcomingBookings.map(b => (
                     <div key={b.id} className="bg-[#0c1221] border border-white/5 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-[#111827] transition-all rounded-sm group relative overflow-hidden shadow-2xl">
-                       <div className="absolute top-0 left-0 w-1 h-full bg-accent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                       <div className="absolute top-0 left-0 w-1 h-full bg-[#95f122] opacity-0 group-hover:opacity-100 transition-opacity"></div>
                        <div className="flex items-center gap-6">
                           <div className="w-14 h-14 bg-[#040812] border border-white/5 flex flex-col items-center justify-center shrink-0">
                              <span className="text-[9px] font-black text-slate-700 uppercase tracking-tighter">{b.date.split('-')[1]}</span>
-                             <span className="text-2xl font-black text-accent italic tracking-tighter leading-none mt-1">{b.date.split('-')[2]}</span>
+                             <span className="text-2xl font-black text-[#95f122] italic tracking-tighter leading-none mt-1">{b.date.split('-')[2]}</span>
                           </div>
                           <div>
                              <div className="flex items-center gap-3">
                                 <h4 className="text-base md:text-lg font-black text-white uppercase tracking-widest italic truncate">{b.courtName}</h4>
                                 {b.isOpenMatch && <span className="px-2 py-0.5 bg-blue-900/20 text-blue-400 border border-blue-500/20 text-[7px] font-black uppercase">Open Match</span>}
                              </div>
-                             <p className="text-[10px] font-bold text-slate-600 uppercase flex items-center gap-2 tracking-widest mt-1"><Clock size={12} className="text-accent" /> {b.timeSlot}</p>
+                             <p className="text-[10px] font-bold text-slate-600 uppercase flex items-center gap-2 tracking-widest mt-1"><Clock size={12} className="text-[#95f122]" /> {b.timeSlot}</p>
                           </div>
                        </div>
                        <div className="flex gap-2">
-                          <button className="p-4 bg-[#040812] border border-white/5 text-slate-700 hover:text-accent transition-all"><Download size={18}/></button>
+                          <button className="p-4 bg-[#040812] border border-white/5 text-slate-700 hover:text-[#95f122] transition-all"><Download size={18}/></button>
                           <button onClick={() => onCancelBooking(b.id)} className="p-4 bg-[#040812] border border-white/5 text-slate-700 hover:text-red-500 transition-all"><Trash2 size={18}/></button>
                        </div>
                     </div>
