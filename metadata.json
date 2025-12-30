@@ -1,0 +1,8 @@
+{
+  "name": "ADAM_HA",
+  "description": "A high-performance court booking and club management platform for Padel enthusiasts. Features real-time reservations, coach scheduling, membership management, and advanced admin analytics.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

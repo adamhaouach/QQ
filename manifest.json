@@ -1,0 +1,37 @@
+
+{
+  "name": "PadelClub Morocco",
+  "short_name": "PadelClub",
+  "description": "High-performance padel booking and club management platform.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#040812",
+  "theme_color": "#040812",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://api.dicebear.com/7.x/initials/svg?seed=P&backgroundColor=95f122&textColor=040812",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://api.dicebear.com/7.x/initials/svg?seed=PC&backgroundColor=95f122&textColor=040812",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Book a Court",
+      "url": "./#/book-court",
+      "icons": [{ "src": "https://api.dicebear.com/7.x/initials/svg?seed=B&backgroundColor=95f122", "sizes": "96x96" }]
+    },
+    {
+      "name": "My Profile",
+      "url": "./#/profile",
+      "icons": [{ "src": "https://api.dicebear.com/7.x/initials/svg?seed=U&backgroundColor=95f122", "sizes": "96x96" }]
+    }
+  ]
+}

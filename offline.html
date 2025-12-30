@@ -1,0 +1,41 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - PadelClub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #040812;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        .accent { color: #95f122; }
+    </style>
+</head>
+<body>
+    <div class="p-8">
+        <div class="inline-block px-4 py-2 bg-[#95f122] text-[#040812] font-black uppercase italic tracking-tighter transform -skew-x-12 mb-8">
+            SIGNAL LOST
+        </div>
+        <h1 class="text-5xl md:text-7xl font-black italic tracking-tighter uppercase mb-6 leading-none">
+            NODE <span class="accent">OFFLINE.</span>
+        </h1>
+        <p class="text-slate-500 text-lg font-bold uppercase italic tracking-tighter opacity-80 max-w-md mx-auto mb-10">
+            You have disconnected from the cluster. Check your network nodes to restore the connection.
+        </p>
+        <button onclick="window.location.reload()" class="bg-[#95f122] text-[#040812] px-10 py-4 font-black uppercase italic tracking-widest hover:bg-[#aeff33] transition-all">
+            Retry Connection
+        </button>
+    </div>
+</body>
+</html>
